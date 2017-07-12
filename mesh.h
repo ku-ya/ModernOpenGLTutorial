@@ -10,7 +10,7 @@
 struct Vertex
 {
 public:
-	Vertex(const glm::vec3& pos, const glm::vec2& texCoord, const glm::vec3& normal)
+	Vertex(const glm::vec3& pos = glm::vec3(0.0f,0.0f,0.0f), const glm::vec2& texCoord = glm::vec2(0.0f,0.0f), const glm::vec3& normal= glm::vec3(0.0f,0.0f,1.0f))
 	{
 		this->pos = pos;
 		this->texCoord = texCoord;
@@ -21,7 +21,7 @@ public:
 	glm::vec2* GetTexCoord() { return &texCoord; }
 	glm::vec3* GetNormal() { return &normal; }
 
-private:
+// private:
 	glm::vec3 pos;
 	glm::vec2 texCoord;
 	glm::vec3 normal;
@@ -39,9 +39,10 @@ class Mesh
 {
 public:
     Mesh(const std::string& fileName);
-	Mesh(Vertex* vertices, unsigned int numVertices, unsigned int* indices, unsigned int numIndices);
+	Mesh(std::vector<Vertex> vertices, unsigned int numVertices, std::vector<unsigned int> indices, unsigned int numIndices);
 
 	void Draw();
+	void Draw_cube();
 
 	virtual ~Mesh();
 protected:

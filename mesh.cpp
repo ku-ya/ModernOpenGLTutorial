@@ -20,7 +20,7 @@ void Mesh::InitMesh(const IndexedModel& model)
 	glBindVertexArray(m_vertexArrayObject);
 
 	glGenBuffers(NUM_BUFFERS, m_vertexArrayBuffers);
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexArrayBuffers[POSITION_VB]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(model.positions[0]) * model.positions.size(), &model.positions[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
@@ -42,7 +42,7 @@ void Mesh::InitMesh(const IndexedModel& model)
 	glBindVertexArray(0);
 }
 
-Mesh::Mesh(Vertex* vertices, unsigned int numVertices, unsigned int* indices, unsigned int numIndices)
+Mesh::Mesh(std::vector<Vertex> vertices, unsigned int numVertices, std::vector<unsigned int> indices, unsigned int numIndices)
 {
     IndexedModel model;
 
@@ -52,7 +52,7 @@ Mesh::Mesh(Vertex* vertices, unsigned int numVertices, unsigned int* indices, un
 		model.texCoords.push_back(*vertices[i].GetTexCoord());
 		model.normals.push_back(*vertices[i].GetNormal());
 	}
-	
+
 	for(unsigned int i = 0; i < numIndices; i++)
         model.indices.push_back(indices[i]);
 
@@ -70,7 +70,18 @@ void Mesh::Draw()
 	glBindVertexArray(m_vertexArrayObject);
 
 	//glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0);
-	glDrawElementsBaseVertex(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
+	// glDrawElementsBaseVertex(GL_LINES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
+    glDrawElementsBaseVertex(GL_LINES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
+
+	glBindVertexArray(0);
+}
+void Mesh::Draw_cube()
+{
+	glBindVertexArray(m_vertexArrayObject);
+
+	//glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0);
+	// glDrawElementsBaseVertex(GL_LINES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
+    glDrawElementsBaseVertex(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
 
 	glBindVertexArray(0);
 }
