@@ -2,6 +2,7 @@
 #define MESH_INCLUDED_H
 
 #include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>

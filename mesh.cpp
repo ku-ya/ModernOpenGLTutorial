@@ -81,7 +81,8 @@ void Mesh::Draw_cube()
 
 	//glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0);
 	// glDrawElementsBaseVertex(GL_LINES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
-    glDrawElementsBaseVertex(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0, 0);
+    // glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, m_numIndices);
 
 	glBindVertexArray(0);
 }
