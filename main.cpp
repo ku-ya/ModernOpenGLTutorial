@@ -42,36 +42,42 @@ vector<vec3> normal =
 std::vector<Vertex> cube_vertex;
 std::vector<unsigned int> cube_index;
 
-void quad( int a, int b, int c, int d, int face, vector<vec3> positions)
+void quad( int a, int b, int c, int d, int face, vector<vec3> positions, vec2 texture, vec4 color)
 {
 	cube_index.push_back(a);cube_index.push_back(b);cube_index.push_back(c);
 	cube_index.push_back(a);cube_index.push_back(c);cube_index.push_back(d);
 
-	cube_vertex.push_back(Vertex(positions[a], vec2(0,0), normal[face]));
-	cube_vertex.push_back(Vertex(positions[b], vec2(0,0), normal[face]));
-	cube_vertex.push_back(Vertex(positions[c], vec2(0,0), normal[face]));
+	cube_vertex.push_back(Vertex(positions[a], texture, normal[face], color));
+	cube_vertex.push_back(Vertex(positions[b], texture, normal[face], color));
+	cube_vertex.push_back(Vertex(positions[c], texture, normal[face], color));
 
-	cube_vertex.push_back(Vertex(positions[a], vec2(0,0), normal[face]));
-	cube_vertex.push_back(Vertex(positions[c], vec2(0,0), normal[face]));
-	cube_vertex.push_back(Vertex(positions[d], vec2(0,0), normal[face]));
+	cube_vertex.push_back(Vertex(positions[a], texture, normal[face], color));
+	cube_vertex.push_back(Vertex(positions[c], texture, normal[face], color));
+	cube_vertex.push_back(Vertex(positions[d], texture, normal[face], color));
 };
 
 
 
-void colorcube(vec3 min, vec3 range, vec3 N){
-	float scale = range.x/N.x;
+void colorcube(vec3 min, vec3 range, float grid_size){
+	vec3 N(range.x/grid_size, range.y/grid_size,range.z/grid_size);
+	cube_vertex.reserve(N.x * N.y * N.z);
+	vec2 texture;
+	vec4 color(1.0f, 0.0f, 0.0f, 1.0f);
+	float scale = grid_size;
 	vector<vec3> pos = getPosition(vec3(0,0,0), 0.2);
 	for(int i = 0; i < N.z; ++i){
 		for(int j = 0; j < N.y; ++j){
 			for(int k = 0; k < N.x; ++k){
 			pos = getPosition(vec3(range.x * (float)k/N.x + min.x,
 				range.y * (float)j/N.y + min.y, range.z * (float)i/N.z + min.z), scale*0.7);
-			quad(1,0,3,2,0, pos); // front
-			quad(2,3,7,6,1, pos); // right
-			quad(3,0,4,7,2, pos); // bottom
-			quad(6,5,1,2,3, pos); // top
-			quad(4,5,6,7,4, pos); // back
-			quad(5,4,0,1,5, pos); // left
+			color.x = (float)j/N.y;
+			color.y = (float)k/N.x;
+			quad(1,0,3,2,0, pos, texture, color); // front
+			quad(2,3,7,6,1, pos, texture, color); // right
+			quad(3,0,4,7,2, pos, texture, color); // bottom
+			quad(6,5,1,2,3, pos, texture, color); // top
+			quad(4,5,6,7,4, pos, texture, color); // back
+			quad(5,4,0,1,5, pos, texture, color); // left
 			}
 		}
 	}
@@ -83,7 +89,16 @@ int main(int argc, char** argv)
 	Display display(DISPLAY_WIDTH, DISPLAY_HEIGHT, "OpenGL");
 	std::vector<Vertex> vert_vec;
 	std::vector<unsigned int> idx_vec;
-	float x_min = -5.0, y_min = -5.0, grid_size = 0.5, L_x = 10, L_y = 10;
+
+	std::cout << "Have " << argc << " arguments:" << std::endl;
+    for (int i = 1; i < argc; ++i) {
+        std::cout << atof(argv[i]) << std::endl;
+    }
+	// exit(0);
+
+	float x_min = atof(argv[1]), y_min = atof(argv[2]), z_min = atof(argv[3]);
+	float grid_size = atof(argv[4]);
+	float L_x = atof(argv[5]), L_y = atof(argv[6]), L_z = atof(argv[7]);
 	int N = round(L_x/grid_size);
 	int N_z = 1;
 	std::vector<glm::vec3> voxel_pos;
@@ -124,34 +139,42 @@ int main(int argc, char** argv)
 	}
 
 
-	int i_test = 0;
-	for(auto position: voxel_pos)
-	{
-		vertex.pos = position + glm::vec3(L_x * (float)i_test/N + x_min, y_min, 0.0);
-		vert_vec.push_back(vertex);
-		vertex.pos.y = L_y + y_min;
-		vert_vec.push_back(vertex);
+	// int i_test = 0;
+	// for(auto position: voxel_pos)
+	// {
+	// 	vertex.pos = position + glm::vec3(L_x * (float)i_test/N + x_min, y_min, 0.0);
+	// 	vert_vec.push_back(vertex);
+	// 	vertex.pos.y = L_y + y_min;
+	// 	vert_vec.push_back(vertex);
+	//
+	// 	vertex.pos = position + glm::vec3(x_min, L_y * (float)i_test/N + x_min, 0.0);
+	// 	vert_vec.push_back(vertex);
+	// 	vertex.pos.y = L_x + x_min;
+	// 	vert_vec.push_back(vertex);
+	//
+	// 	i_test++;
+	//
+	// }
 
-		vertex.pos = position + glm::vec3(x_min, L_y * (float)i_test/N + x_min, 0.0);
-		vert_vec.push_back(vertex);
-		vertex.pos.y = L_x + x_min;
-		vert_vec.push_back(vertex);
-
-		i_test++;
-
-	}
-
-	colorcube(vec3(-5,-5, 0), vec3(10,10,5), vec3(10,10,10));
+	colorcube(vec3(x_min, y_min, z_min), vec3(L_x, L_y, L_z), grid_size);
 
 	Mesh mesh(vert_vec, vert_vec.size(), idx_vec, idx_vec.size());
 	Mesh cube(cube_vertex, cube_vertex.size(), cube_index, cube_index.size());
-	Mesh monkey("./res/monkey3.obj");
+	//Mesh monkey("./res/monkey3.obj");
 	Shader shader("./res/basicShader");
 	Shader cube_shader("./res/cubeShader");
 	Texture texture("./res/bricks.jpg");
 	Transform transform;
-	Camera camera(glm::vec3(0.0f, 0.0f, -15.0f), 70.0f, (float)DISPLAY_WIDTH/(float)DISPLAY_HEIGHT, 0.1f, 100.0f);
-
+	Camera camera(glm::vec3(0.0f, 2.0f, -20.0f), 70.0f, (float)DISPLAY_WIDTH/(float)DISPLAY_HEIGHT, 0.1f, 100.0f);
+	vector<vec4> color_RGBA;
+	color_RGBA.reserve(cube_vertex.size());
+	int N_v = cube_vertex.size();
+	for(int i = 0; i < cube_vertex.size(); ++i)
+	{
+		color_RGBA.push_back(vec4((float)i/N_v,1.0 - (float)i/N_v,1.0,1.0));
+	}
+	cout<<cube_vertex.size()<<'\n';
+	cout<<color_RGBA.size()<<'\n';
 	SDL_Event e;
 	auto isRunning = true;
 	auto counter = 0.0f;
@@ -178,29 +201,26 @@ int main(int argc, char** argv)
 		texture.Bind();
 		transform.GetPos()->x = 0;
 		transform.GetPos()->y = 0;
-	 	transform.GetRot()->y = counter * 2;
+		transform.GetRot()->x = -90;
+	 	transform.GetRot()->y = 0;
+		transform.GetRot()->z = counter * 1;
 		shader.Update(transform, camera);
 		// monkey.Draw();
-
 		mesh.Draw();
+		auto colorMem = cube.getColorMem();
+		for(int i = 0; i < color_RGBA.size(); ++i)
+		{
+			// color_RGBA[i].w = (sin(counter * 10)+1)/2;
+			colorMem[i].x = 1;
+			colorMem[i].y = 0;
+			colorMem[i].z = (sin(counter * 10)+1)/2;
+			colorMem[i].w = (sin(counter * 10)+1)/2;
+		}
 
 		cube_shader.Bind();
-		// transform.GetPos()->x = 5;
 		cube_shader.Update(transform, camera);
+		// cube.Update_value(color_RGBA, color_RGBA.size());
 		cube.Draw_cube();
-
-		// transform.GetRot()->y = 0;
-		// transform.GetScale()->x = 1;
-		// transform.GetScale()->y = 1;
-		// transform.GetPos()->z = 1;
-		//
-		// for(auto vox_pos: voxel_pos){
-		// 	transform.GetPos()->x = vox_pos.x;
-		// 	transform.GetPos()->y = vox_pos.y;
-		// 	transform.GetPos()->z = vox_pos.z;
-		// 	cube_shader.Update(transform, camera);
-		// cube.Draw_cube();
-		// }
 
 		display.SwapBuffers();
 		SDL_Delay(1);
