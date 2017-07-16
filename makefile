@@ -11,7 +11,7 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC =
+INC = /usr/include/eigen3
 CFLAGS = -std=c++11 -Wall
 RESINC =
 LIBDIR =
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE =
 OUT_RELEASE = bin/Release/OpenGLTest
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/texture.o $(OBJDIR_DEBUG)/stb_image.o $(OBJDIR_DEBUG)/shader.o $(OBJDIR_DEBUG)/obj_loader.o $(OBJDIR_DEBUG)/mesh.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/display.o
+OBJ_DEBUG =  $(OBJDIR_DEBUG)/texture.o $(OBJDIR_DEBUG)/stb_image.o $(OBJDIR_DEBUG)/shader.o $(OBJDIR_DEBUG)/obj_loader.o $(OBJDIR_DEBUG)/mesh.o $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/display.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/texture.o $(OBJDIR_RELEASE)/stb_image.o $(OBJDIR_RELEASE)/shader.o $(OBJDIR_RELEASE)/obj_loader.o $(OBJDIR_RELEASE)/mesh.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/display.o
+OBJ_RELEASE =  $(OBJDIR_RELEASE)/texture.o $(OBJDIR_RELEASE)/stb_image.o $(OBJDIR_RELEASE)/shader.o $(OBJDIR_RELEASE)/obj_loader.o $(OBJDIR_RELEASE)/mesh.o $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/display.o
 
 all: debug release
 

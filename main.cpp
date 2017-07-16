@@ -6,6 +6,7 @@
 #include "texture.h"
 #include "transform.h"
 #include "camera.h"
+#include "voxel_traversal.h"
 #include <memory>
 
 static const int DISPLAY_WIDTH = 800;
@@ -62,7 +63,7 @@ void colorcube(vec3 min, vec3 range, float grid_size){
 	vec3 N(range.x/grid_size, range.y/grid_size,range.z/grid_size);
 	cube_vertex.reserve(N.x * N.y * N.z);
 	vec2 texture;
-	vec4 color(1.0f, 0.0f, 0.0f, 1.0f);
+	vec4 color(0.0f, 0.0f, 0.0f, 1.0f);
 	float scale = grid_size;
 	vector<vec3> pos = getPosition(vec3(0,0,0), 0.2);
 	for(int i = 0; i < N.z; ++i){
@@ -94,7 +95,8 @@ int main(int argc, char** argv)
     for (int i = 1; i < argc; ++i) {
         std::cout << atof(argv[i]) << std::endl;
     }
-	// exit(0);
+
+
 
 	float x_min = atof(argv[1]), y_min = atof(argv[2]), z_min = atof(argv[3]);
 	float grid_size = atof(argv[4]);
@@ -158,6 +160,49 @@ int main(int argc, char** argv)
 
 	colorcube(vec3(x_min, y_min, z_min), vec3(L_x, L_y, L_z), grid_size);
 
+
+	auto ray_cast  = Ray_base(x_min, y_min, z_min, L_x, L_y, L_z, grid_size);
+	//
+	double scale = 0.8;
+	Eigen::Vector3d ray_start(6,1,1);
+	Eigen::Vector3d ray_end(1,9,4);
+	// cout<<"ending ray: \n"<<ray_end<<endl;
+  	ray_cast.setStartEnd(ray_start, ray_end);
+	//
+	cout<<"ray voxel simple: "<<ray_cast.SingleRayCasting3D()<<endl;
+	// for(int index = 0 ; index < ray_cast.SingleRayCasting3D(); ++index)
+	// {
+	// 	cout<<<<endl;
+	// }
+	cout<<"ray voxel ADD: "<<ray_cast.voxel_traversal()<<endl;
+
+	auto visited = ray_cast.getVisited();
+	cout<<" size: "<<visited.size()<<endl;
+
+	Eigen::Vector3i point;
+	for(int j= 0; j< visited.size(); ++j){
+
+		// cout<<typeid(visited).name()<<endl;
+		try{
+			point = visited[j];
+
+		// cout<<"index: "<< j << " val: " <<point[2]<<endl;
+		// cout<<point<<endl;
+	}
+	catch(std::bad_alloc& ba)
+	{
+		std::cerr << "bad mem alloc "<<ba.what()<<'\n';
+	}
+		// int index = N*point[0] +  N*point[1] +  point[2];
+		// cout<<point[0]<< " " <<point[1]<<" "<<point[2]<<" * "<<endl;
+}
+		// for(auto voxel : visited)
+		// {
+		// 	int index = voxel[0] +  N*voxel[1] +  N*N*voxel[2];
+		// 	cout<<index<<endl;
+		// }
+
+
 	Mesh mesh(vert_vec, vert_vec.size(), idx_vec, idx_vec.size());
 	Mesh cube(cube_vertex, cube_vertex.size(), cube_index, cube_index.size());
 	//Mesh monkey("./res/monkey3.obj");
@@ -178,6 +223,8 @@ int main(int argc, char** argv)
 	SDL_Event e;
 	auto isRunning = true;
 	auto counter = 0.0f;
+
+	double idx_loop = 0;
 	while(isRunning)
 	{
 		while(SDL_PollEvent(&e))
@@ -207,17 +254,72 @@ int main(int argc, char** argv)
 		shader.Update(transform, camera);
 		// monkey.Draw();
 		mesh.Draw();
-		auto colorMem = cube.getColorMem();
-		for(int i = 0; i < color_RGBA.size(); ++i)
-		{
-			// color_RGBA[i].w = (sin(counter * 10)+1)/2;
-			colorMem[i].x = 1;
-			colorMem[i].y = 0;
-			colorMem[i].z = (sin(counter * 10)+1)/2;
-			colorMem[i].w = (sin(counter * 10)+1)/2;
-		}
 
 		cube_shader.Bind();
+		auto colorMem = cube.getColorMem();
+
+		// for(int index = 0; index < color_RGBA.size(); ++index)
+		for(int index = 0; index< color_RGBA.size() && idx_loop == 0; ++index)
+		{
+			// cout<<"test"<<endl;
+			// cout<<visited[k]<<endl;
+
+			// index = N*N*index +  N*index +  index;
+			// index = N*N*index +  N*index +  index;
+			// color_RGBA[i].w = (sin(counter * 10)+1)/2;
+			colorMem[index].x = 0;
+			colorMem[index].y = 0;
+			colorMem[index].z = 0;//(sin(counter * 10)+1)/2;
+			// if(index%N == 0){
+			colorMem[index].w = 0;
+			// }else{
+			// 	colorMem[index].w = 0.0;
+			// }
+		}
+		// for(auto voxel : visited)
+		// {
+		// 	int index = 36*(voxel[0] +  N*voxel[1] +  N*N*voxel[2]);
+		// 	for(int j= 0; j < 36; ++j)
+		// 	{
+		// 	colorMem[index + j].x = 1;
+		// 	colorMem[index + j].y = 0;
+		// 	colorMem[index + j].z = 0;
+		// 	colorMem[index + j].w = 0.5;
+		// 	}
+		// }
+
+	// for(int index = 0 ; index < ray_cast.SingleRayCasting3D(); ++index)
+	// {
+	// 	cout<<<<endl;
+	// }
+	ray_start << 5,5,2.5;
+	ray_end << 5 + 2.5*cos(idx_loop), 5 + 2.5*sin(idx_loop), 2.5 + sin(2*idx_loop);
+	idx_loop += 0.01;
+	ray_cast.setStartEnd(ray_start, ray_end);
+	int N_single = ray_cast.SingleRayCasting3D();
+	auto single_ray = ray_cast.getIndices();
+
+		for(int k = 0 ; k < N_single; ++k)
+		{
+				// cout<<single_ray[k]<<endl;
+
+			int index = single_ray[k];
+			// cout<<"single index: "<<index<<endl;
+			vector<double> position = ray_cast.MapLocationFromInd(index);
+			vector<int> pos_int(3);
+			for(int j = 0; j<3; ++j)
+			{
+				pos_int[j] = floor(position[j]/ray_cast.getBinSize());
+			}
+			index = 36*(pos_int[0] +  N*pos_int[1] +  N*N*pos_int[2]);
+			for(int j= 0; j < 36; ++j)
+			{
+			colorMem[index + j].x = 0;
+			colorMem[index + j].y = 1;
+			colorMem[index + j].z = 0;
+			colorMem[index + j].w = 0.5;
+			}
+		}
 		cube_shader.Update(transform, camera);
 		// cube.Update_value(color_RGBA, color_RGBA.size());
 		cube.Draw_cube();
